@@ -62,7 +62,7 @@ func (comments *Comments) Disable() error {
 	insta := comments.item.media.instagram()
 	data, err := insta.prepareData(
 		map[string]interface{}{
-			"media_id": comments.item.ID,
+			"media_id": comments.item.MediaOrAd.ID,
 		},
 	)
 	if err != nil {
@@ -71,7 +71,7 @@ func (comments *Comments) Disable() error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlCommentDisable, comments.item.ID),
+			Endpoint: fmt.Sprintf(urlCommentDisable, comments.item.MediaOrAd.ID),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
@@ -92,7 +92,7 @@ func (comments *Comments) Enable() error {
 	insta := comments.item.media.instagram()
 	data, err := insta.prepareData(
 		map[string]interface{}{
-			"media_id": comments.item.ID,
+			"media_id": comments.item.MediaOrAd.ID,
 		},
 	)
 	if err != nil {
@@ -101,7 +101,7 @@ func (comments *Comments) Enable() error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlCommentEnable, comments.item.ID),
+			Endpoint: fmt.Sprintf(urlCommentEnable, comments.item.MediaOrAd.ID),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
@@ -163,7 +163,7 @@ func (comments *Comments) Next() bool {
 //
 // See example: examples/media/commentsSync.go
 func (comments *Comments) Sync() {
-	endpoint := fmt.Sprintf(urlCommentSync, comments.item.ID)
+	endpoint := fmt.Sprintf(urlCommentSync, comments.item.MediaOrAd.ID)
 	comments.endpoint = endpoint
 	return
 }
@@ -190,11 +190,11 @@ func (comments *Comments) Add(text string) (err error) {
 			map[string]interface{}{
 				"recipient_users": to,
 				"action":          "send_item",
-				"media_id":        item.ID,
+				"media_id":        item.MediaOrAd.ID,
 				"client_context":  generateUUID(),
 				"text":            text,
 				"entry":           "reel",
-				"reel_id":         item.User.ID,
+				"reel_id":         item.MediaOrAd.User.ID,
 			},
 		)
 		opt = &reqOptions{
@@ -211,7 +211,7 @@ func (comments *Comments) Add(text string) (err error) {
 			},
 		)
 		opt = &reqOptions{
-			Endpoint: fmt.Sprintf(urlCommentAdd, item.Pk),
+			Endpoint: fmt.Sprintf(urlCommentAdd, item.MediaOrAd.Pk),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		}
@@ -237,7 +237,7 @@ func (comments *Comments) Del(comment *Comment) error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlCommentDelete, comments.item.ID, id),
+			Endpoint: fmt.Sprintf(urlCommentDelete, comments.item.MediaOrAd.ID, id),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
