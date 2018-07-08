@@ -62,7 +62,7 @@ func prepareRecipients(cc interface{}) (bb string, err error) {
 			ids = append(ids, []int64{c.Users[i].ID})
 		}
 	case *Item:
-		ids = append(ids, []int64{c.User.ID})
+		ids = append(ids, []int64{c.MediaOrAd.User.ID})
 	case int64:
 		ids = append(ids, []int64{c})
 	}
