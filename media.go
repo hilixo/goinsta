@@ -27,30 +27,22 @@ type MediaOrAd struct {
 	FilterType      int     `json:"filter_type"`
 	// Images contains URL images in different versions.
 	// Version = quality.
-	Images           Images   `json:"image_versions2,omitempty"`
-	OriginalWidth    int      `json:"original_width,omitempty"`
-	OriginalHeight   int      `json:"original_height,omitempty"`
-	User             User     `json:"user"`
-	ImportedTakenAt  int      `json:"imported_taken_at,omitempty"`
-	Location         Location `json:"location,omitempty"`
-	Lat              float64  `json:"lat,omitempty"`
-	Lng              float64  `json:"lng,omitempty"`
-	CanViewerReshare bool     `json:"can_viewer_reshare"`
-	Caption          Caption  `json:"caption"`
-	CaptionIsEdited  bool     `json:"caption_is_edited"`
-	Likes            int      `json:"like_count"`
-	HasLiked         bool     `json:"has_liked"`
-	// Toplikers can be `string` or `[]string`.
-	// Use TopLikers function instead of getting it directly.
-	Toplikers                    interface{} `json:"top_likers"`
-	CommentLikesEnabled          bool        `json:"comment_likes_enabled"`
-	CommentThreadingEnabled      bool        `json:"comment_threading_enabled"`
-	HasMoreComments              bool        `json:"has_more_comments"`
-	MaxNumVisiblePreviewComments int         `json:"max_num_visible_preview_comments"`
-	CanViewMorePreviewComments   bool        `json:"can_view_more_preview_comments"`
-	// Previewcomments can be `string` or `[]string` or `[]Comment`.
-	// Use PreviewComments function instead of getting it directly.
-	Previewcomments                interface{} `json:"preview_comments,omitempty"`
+	Images                         Images      `json:"image_versions2,omitempty"`
+	OriginalWidth                  int         `json:"original_width,omitempty"`
+	OriginalHeight                 int         `json:"original_height,omitempty"`
+	User                           User        `json:"user"`
+	CanViewerReshare               bool        `json:"can_viewer_reshare"`
+	Caption                        Caption     `json:"caption"`
+	CaptionIsEdited                bool        `json:"caption_is_edited"`
+	LikeCount                      int         `json:"like_count"`
+	HasLiked                       bool        `json:"has_liked"`
+	Toplikers                      interface{} `json:"top_likers"`
+	CommentLikesEnabled            bool        `json:"comment_likes_enabled"`
+	CommentThreadingEnabled        bool        `json:"comment_threading_enabled"`
+	HasMoreComments                bool        `json:"has_more_comments"`
+	MaxNumVisiblePreviewComments   int         `json:"max_num_visible_preview_comments"`
+	PreviewComments                interface{} `json:"preview_comments,omitempty"`
+	CanViewMorePreviewComments     bool        `json:"can_view_more_preview_comments"`
 	CommentCount                   int         `json:"comment_count"`
 	InlineComposerDisplayCondition string      `json:"inline_composer_display_condition"`
 	PhotoOfYou                     bool        `json:"photo_of_you"`
@@ -60,6 +52,13 @@ type MediaOrAd struct {
 	InventorySource                string      `json:"inventory_source"`
 	IsSeen                         []bool      `json:"is_seen"`
 	IsEof                          bool        `json:"is_eof"`
+
+	ImportedTakenAt int      `json:"imported_taken_at,omitempty"`
+	Location        Location `json:"location,omitempty"`
+	Lat             float64  `json:"lat,omitempty"`
+	Lng             float64  `json:"lng,omitempty"`
+	// Previewcomments can be `string` or `[]string` or `[]Comment`.
+	// Use PreviewComments function instead of getting it directly.
 	// Tags are tagged people in photo
 	Tags struct {
 		In []Tag `json:"in"`
@@ -422,7 +421,7 @@ func (item *Item) TopLikers() []string {
 // Depending on PreviewComments parameter.
 // If PreviewComments are string or []string only the Text field will be filled.
 func (item *Item) PreviewComments() []Comment {
-	switch s := item.MediaOrAd.Previewcomments.(type) {
+	switch s := item.MediaOrAd.PreviewComments.(type) {
 	case []Comment:
 		return s
 	case []string:
