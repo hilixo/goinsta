@@ -16,61 +16,54 @@ import (
 	"time"
 )
 
-// Item represents media items
-//
-// All Item has Images or Videos objects which contains the url(s).
-// You can use Download function to get the best quality Image or Video from Item.
-type Item struct {
-	media    Media
-	Comments *Comments `json:"-"`
-
-	TakenAt          float64 `json:"taken_at"`
-	Pk               int64   `json:"pk"`
-	ID               string  `json:"id"`
-	CommentsDisabled bool    `json:"comments_disabled"`
-	DeviceTimestamp  int64   `json:"device_timestamp"`
-	MediaType        int     `json:"media_type"`
-	Code             string  `json:"code"`
-	ClientCacheKey   string  `json:"client_cache_key"`
-	FilterType       int     `json:"filter_type"`
-	CarouselParentID string  `json:"carousel_parent_id"`
-	CarouselMedia    []Item  `json:"carousel_media,omitempty"`
-	User             User    `json:"user"`
-	CanViewerReshare bool    `json:"can_viewer_reshare"`
-	Caption          Caption `json:"caption"`
-	CaptionIsEdited  bool    `json:"caption_is_edited"`
-	Likes            int     `json:"like_count"`
-	HasLiked         bool    `json:"has_liked"`
+type MediaOrAd struct {
+	TakenAt         float64 `json:"taken_at"`
+	Pk              int64   `json:"pk"`
+	ID              string  `json:"id"`
+	DeviceTimestamp int64   `json:"device_timestamp"`
+	MediaType       int     `json:"media_type"`
+	Code            string  `json:"code"`
+	ClientCacheKey  string  `json:"client_cache_key"`
+	FilterType      int     `json:"filter_type"`
+	// Images contains URL images in different versions.
+	// Version = quality.
+	Images           Images   `json:"image_versions2,omitempty"`
+	OriginalWidth    int      `json:"original_width,omitempty"`
+	OriginalHeight   int      `json:"original_height,omitempty"`
+	User             User     `json:"user"`
+	ImportedTakenAt  int      `json:"imported_taken_at,omitempty"`
+	Location         Location `json:"location,omitempty"`
+	Lat              float64  `json:"lat,omitempty"`
+	Lng              float64  `json:"lng,omitempty"`
+	CanViewerReshare bool     `json:"can_viewer_reshare"`
+	Caption          Caption  `json:"caption"`
+	CaptionIsEdited  bool     `json:"caption_is_edited"`
+	Likes            int      `json:"like_count"`
+	HasLiked         bool     `json:"has_liked"`
 	// Toplikers can be `string` or `[]string`.
 	// Use TopLikers function instead of getting it directly.
 	Toplikers                    interface{} `json:"top_likers"`
-	Likers                       []User      `json:"likers"`
 	CommentLikesEnabled          bool        `json:"comment_likes_enabled"`
 	CommentThreadingEnabled      bool        `json:"comment_threading_enabled"`
 	HasMoreComments              bool        `json:"has_more_comments"`
 	MaxNumVisiblePreviewComments int         `json:"max_num_visible_preview_comments"`
+	CanViewMorePreviewComments   bool        `json:"can_view_more_preview_comments"`
 	// Previewcomments can be `string` or `[]string` or `[]Comment`.
 	// Use PreviewComments function instead of getting it directly.
-	Previewcomments interface{} `json:"preview_comments,omitempty"`
-	CommentCount    int         `json:"comment_count"`
-	PhotoOfYou      bool        `json:"photo_of_you"`
+	Previewcomments                interface{} `json:"preview_comments,omitempty"`
+	CommentCount                   int         `json:"comment_count"`
+	InlineComposerDisplayCondition string      `json:"inline_composer_display_condition"`
+	PhotoOfYou                     bool        `json:"photo_of_you"`
+	CanViewerSave                  bool        `json:"can_viewer_save"`
+	OrganicTrackingToken           string      `json:"organic_tracking_token"`
+	Preview                        string      `json:"preview"`
+	InventorySource                string      `json:"inventory_source"`
+	IsSeen                         []bool      `json:"is_seen"`
+	IsEof                          bool        `json:"is_eof"`
 	// Tags are tagged people in photo
 	Tags struct {
 		In []Tag `json:"in"`
 	} `json:"usertags,omitempty"`
-	FbUserTags           Tag    `json:"fb_user_tags"`
-	CanViewerSave        bool   `json:"can_viewer_save"`
-	OrganicTrackingToken string `json:"organic_tracking_token"`
-	// Images contains URL images in different versions.
-	// Version = quality.
-	Images          Images   `json:"image_versions2,omitempty"`
-	OriginalWidth   int      `json:"original_width,omitempty"`
-	OriginalHeight  int      `json:"original_height,omitempty"`
-	ImportedTakenAt int      `json:"imported_taken_at,omitempty"`
-	Location        Location `json:"location,omitempty"`
-	Lat             float64  `json:"lat,omitempty"`
-	Lng             float64  `json:"lng,omitempty"`
-
 	// Videos
 	Videos            []Video `json:"video_versions,omitempty"`
 	HasAudio          bool    `json:"has_audio,omitempty"`
@@ -79,6 +72,27 @@ type Item struct {
 	IsDashEligible    int     `json:"is_dash_eligible,omitempty"`
 	VideoDashManifest string  `json:"video_dash_manifest,omitempty"`
 	NumberOfQualities int     `json:"number_of_qualities,omitempty"`
+}
+
+// Item represents media items
+//
+// All Item has Images or Videos objects which contains the url(s).
+// You can use Download function to get the best quality Image or Video from Item.
+type Item struct {
+	media            Media
+	Comments         *Comments `json:"-"`
+	CommentsDisabled bool      `json:"comments_disabled"`
+	CarouselParentID string    `json:"carousel_parent_id"`
+	CarouselMedia    []Item    `json:"carousel_media,omitempty"`
+	Likers           []User    `json:"likers"`
+	FbUserTags       Tag       `json:"fb_user_tags"`
+
+	ImportedTakenAt int      `json:"imported_taken_at,omitempty"`
+	Location        Location `json:"location,omitempty"`
+	Lat             float64  `json:"lat,omitempty"`
+	Lng             float64  `json:"lng,omitempty"`
+
+	MediaOrAd *MediaOrAd `json:"media_or_ad"`
 
 	// Only for stories
 	StoryEvents              []interface{} `json:"story_events"`
@@ -99,7 +113,7 @@ type Item struct {
 
 // MediaToString returns Item.MediaType as string.
 func (item *Item) MediaToString() string {
-	switch item.MediaType {
+	switch item.MediaOrAd.MediaType {
 	case 1:
 		return "photo"
 	case 2:
@@ -110,10 +124,10 @@ func (item *Item) MediaToString() string {
 
 func setToItem(item *Item, media Media) {
 	item.media = media
-	item.User.inst = media.instagram()
+	item.MediaOrAd.User.inst = media.instagram()
 	item.Comments = newComments(item)
 	for i := range item.CarouselMedia {
-		item.CarouselMedia[i].User = item.User
+		item.CarouselMedia[i].MediaOrAd.User = item.MediaOrAd.User
 		setToItem(&item.CarouselMedia[i], media)
 	}
 }
@@ -194,7 +208,7 @@ func GetBest(obj interface{}) string {
 // See example: examples/media/hashtags.go
 func (item *Item) Hashtags() []Hashtag {
 	hsh := make([]Hashtag, 0)
-	capt := item.Caption.Text
+	capt := item.MediaOrAd.Caption.Text
 	for {
 		i := strings.IndexByte(capt, '#')
 		if i < 0 {
@@ -222,7 +236,7 @@ func (item *Item) Delete() error {
 	insta := item.media.instagram()
 	data, err := insta.prepareData(
 		map[string]interface{}{
-			"media_id": item.ID,
+			"media_id": item.MediaOrAd.ID,
 		},
 	)
 	if err != nil {
@@ -231,7 +245,7 @@ func (item *Item) Delete() error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlMediaDelete, item.ID),
+			Endpoint: fmt.Sprintf(urlMediaDelete, item.MediaOrAd.ID),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
@@ -245,7 +259,7 @@ func (item *Item) Delete() error {
 func (item *Item) SyncLikers() error {
 	resp := respLikers{}
 	insta := item.media.instagram()
-	body, err := insta.sendSimpleRequest(urlMediaLikers, item.ID)
+	body, err := insta.sendSimpleRequest(urlMediaLikers, item.MediaOrAd.ID)
 	if err != nil {
 		return err
 	}
@@ -263,7 +277,7 @@ func (item *Item) Unlike() error {
 	insta := item.media.instagram()
 	data, err := insta.prepareData(
 		map[string]interface{}{
-			"media_id": item.ID,
+			"media_id": item.MediaOrAd.ID,
 		},
 	)
 	if err != nil {
@@ -272,7 +286,7 @@ func (item *Item) Unlike() error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlMediaUnlike, item.ID),
+			Endpoint: fmt.Sprintf(urlMediaUnlike, item.MediaOrAd.ID),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
@@ -287,7 +301,7 @@ func (item *Item) Like() error {
 	insta := item.media.instagram()
 	data, err := insta.prepareData(
 		map[string]interface{}{
-			"media_id": item.ID,
+			"media_id": item.MediaOrAd.ID,
 		},
 	)
 	if err != nil {
@@ -296,7 +310,7 @@ func (item *Item) Like() error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlMediaLike, item.ID),
+			Endpoint: fmt.Sprintf(urlMediaLike, item.MediaOrAd.ID),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
@@ -311,7 +325,7 @@ func (item *Item) Save() error {
 	insta := item.media.instagram()
 	data, err := insta.prepareData(
 		map[string]interface{}{
-			"media_id": item.ID,
+			"media_id": item.MediaOrAd.ID,
 		},
 	)
 	if err != nil {
@@ -320,7 +334,7 @@ func (item *Item) Save() error {
 
 	_, err = insta.sendRequest(
 		&reqOptions{
-			Endpoint: fmt.Sprintf(urlMediaSave, item.ID),
+			Endpoint: fmt.Sprintf(urlMediaSave, item.MediaOrAd.ID),
 			Query:    generateSignature(data),
 			IsPost:   true,
 		},
@@ -353,7 +367,7 @@ func (item *Item) Download(folder, name string) (imgs, vds string, err error) {
 	os.MkdirAll(imgFolder, 0777)
 	os.MkdirAll(vidFolder, 0777)
 
-	vds = GetBest(item.Videos)
+	vds = GetBest(item.MediaOrAd.Videos)
 	if vds != "" {
 		if name == "" {
 			u, err = neturl.Parse(vds)
@@ -371,7 +385,7 @@ func (item *Item) Download(folder, name string) (imgs, vds string, err error) {
 		return "", vds, err
 	}
 
-	imgs = GetBest(item.Images.Versions)
+	imgs = GetBest(item.MediaOrAd.Images.Versions)
 	if imgs != "" {
 		if name == "" {
 			u, err = neturl.Parse(imgs)
@@ -395,7 +409,7 @@ func (item *Item) Download(folder, name string) (imgs, vds string, err error) {
 // TopLikers returns string slice or single string (inside string slice)
 // Depending on TopLikers parameter.
 func (item *Item) TopLikers() []string {
-	switch s := item.Toplikers.(type) {
+	switch s := item.MediaOrAd.Toplikers.(type) {
 	case string:
 		return []string{s}
 	case []string:
@@ -408,7 +422,7 @@ func (item *Item) TopLikers() []string {
 // Depending on PreviewComments parameter.
 // If PreviewComments are string or []string only the Text field will be filled.
 func (item *Item) PreviewComments() []Comment {
-	switch s := item.Previewcomments.(type) {
+	switch s := item.MediaOrAd.Previewcomments.(type) {
 	case []Comment:
 		return s
 	case []string:
